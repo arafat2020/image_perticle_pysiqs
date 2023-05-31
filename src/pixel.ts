@@ -7,7 +7,8 @@ export async function main() {
     canves.height = innerHeight
     const img = document.createElement('img')
     const ctx = canves.getContext('2d')
-    const imge64 = await imageToBase64('./angler.png')
+    const imgSrc:string = './heart.png'
+    const imge64 = await imageToBase64(imgSrc)
     img.id = "cni"
     img.src = `${imge64}`
     await document.getElementById("app")?.appendChild(img)
@@ -25,17 +26,17 @@ export async function main() {
         originY: number
         color: string
         ease: number
-        dx:number
-        dy:number
-        distance:number
-        force:number
-        angle:number
-        fricktion:number
+        dx: number
+        dy: number
+        distance: number
+        force: number
+        angle: number
+        fricktion: number
         constructor(effect: Effect, x: number, y: number, color: string) {
             this.effect = effect
             this.x = Math.random() * this.effect.width
             this.y = Math.random() * this.effect.height
-            this.size = 2
+            this.size = 1
             this.originX = Math.floor(x)
             this.originY = Math.floor(y)
             this.vx = 0
@@ -46,7 +47,7 @@ export async function main() {
             this.dy = 0
             this.distance = 0
             this.angle = 0
-            this.fricktion =.90
+            this.fricktion = .90
         }
         draw(context: CanvasRenderingContext2D) {
             context.fillRect(this.x, this.y, this.size, this.size)
@@ -55,19 +56,23 @@ export async function main() {
         update() {
             this.dx = this.effect.mouse.x - this.x
             this.dy = this.effect.mouse.y - this.y
-            this.distance = this.dx * this.dx  + this.dy * this.dy
-            this.force = -this.effect.mouse.redius/this.distance
-            if (this.distance<this.effect.mouse.redius) {
-                this.angle = Math.atan2(this.dy,this.dx)
+            this.distance = this.dx * this.dx + this.dy * this.dy
+            this.force = -this.effect.mouse.redius / this.distance
+            if (this.distance < this.effect.mouse.redius) {
+                this.angle = Math.atan2(this.dy, this.dx)
                 this.vx += this.force * Math.cos(this.angle)
                 this.vy += this.force * Math.sin(this.angle)
+                this.size = 3
             }
-            this.x += (this.vx*=this.fricktion) + (this.originX - this.x) * this.ease
-            this.y += (this.vy*=this.fricktion) + (this.originY - this.y) * this.ease
-            
+            else{
+                this.size = 1
+            }
+            this.x += (this.vx *= this.fricktion) + (this.originX - this.x) * this.ease
+            this.y += (this.vy *= this.fricktion) + (this.originY - this.y) * this.ease
+
         }
     }
-    
+
     class Effect {
         width: number
         height: number
@@ -92,10 +97,10 @@ export async function main() {
                 x: undefined,
                 y: undefined
             }
-            window.addEventListener('mousemove',e=>{
+            window.addEventListener('mousemove', e => {
                 this.mouse.x = e.x
                 this.mouse.y = e.y
-                
+
             })
 
         }
@@ -131,10 +136,19 @@ export async function main() {
     const pr = new Effect(canves.width, canves.height)
     await pr.init(ctx)
 
+   
+    var desiredFPS = 30; // Set the desired FPS
+    var interval = 1000 / desiredFPS; // Calculate the interval between frames
+
+    var lastTime = 0;
+
     function animate() {
-        ctx.clearRect(0, 0, canves.width, canves.height)
-        pr.draw(ctx)
-        pr.update()
+        if (Date.now() - lastTime >= interval) {
+            ctx.clearRect(0, 0, canves.width, canves.height)
+            pr.draw(ctx)
+            pr.update()
+            lastTime = Date.now();
+        }
         requestAnimationFrame(animate)
     }
     animate()
